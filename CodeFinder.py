@@ -1,8 +1,65 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import csv
+import requests
+import os
+import sys
 
+# Version of the current exe
+current_version = "v1.2.0"  # Update this manually or programmatically
+
+# Declare lists and filtered data
 list1 = list2 = filtered_list = None
+
+def check_for_update():
+    """Check if there is a new version of the .exe file on GitHub"""
+    # Replace with your GitHub repository URL and the release tag where .exe is uploaded
+    repo_owner = "clawhs"
+    repo_name = "codefinder"
+    release_url = f"https://api.github.com/repos/clawhs/codefinder/releases/latest"
+    
+    try:
+        response = requests.get(release_url)
+        response.raise_for_status()
+        release_data = response.json()
+
+        # Get the latest release version and .exe asset URL
+        latest_version = release_data["tag_name"]
+        asset_url = next(
+            (asset["browser_download_url"] for asset in release_data["assets"] if asset["name"].endswith(".exe")),
+            None
+        )
+
+        if asset_url and latest_version != current_version:
+            user_response = messagebox.askyesno(
+                "Update Available", 
+                f"A new version ({latest_version}) is available. Do you want to update?"
+            )
+
+            if user_response:
+                download_and_update(asset_url)
+        else:
+            messagebox.showinfo("No Updates", "You are using the latest version.")
+
+    except requests.RequestException as e:
+        messagebox.showerror("Error", f"Failed to check for updates: {e}")
+
+def download_and_update(url):
+    """Download and replace the current .exe with the latest version from GitHub"""
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        download_path = os.path.join(os.path.dirname(sys.executable), "new_version.exe")
+
+        with open(download_path, "wb") as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+
+        messagebox.showinfo("Update Downloaded", "The new version has been downloaded. Restart the application to apply the update.")
+        sys.exit()  # Close the current application so user can run the new .exe
+    except requests.RequestException as e:
+        messagebox.showerror("Error", f"Failed to download update: {e}")
 
 def center_window(window, width, height):
     position_top = int(window.winfo_screenheight() / 2 - height / 2)
@@ -115,9 +172,14 @@ tk_root = tk.Tk()
 tk_root.title("Code Filter from CSV")
 center_window(tk_root, 550, 550)
 
+# Check for updates on startup
+check_for_update()
+
+# Variables for match type
 exact_match_var = tk.BooleanVar()
 partial_match_var = tk.BooleanVar()
 
+# GUI setup
 tk.Label(tk_root, text="1. Input Codes From Our Website, ").pack(pady=5, fill='x')
 load_first_button = tk.Button(tk_root, text="Load First List from CSV", command=lambda: load_list(True))
 load_first_button.pack(pady=10)
