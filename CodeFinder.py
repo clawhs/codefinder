@@ -119,35 +119,39 @@ def check_for_update():
     """Check if there is a new version of the .exe file on GitHub"""
     repo_owner = "clawhs"
     repo_name = "codefinder"
-    release_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases"
-
+    release_url = f"https://api.github.com/repos/clawhs/codefinder/releases"
+    
     try:
-        # Sending a GET request to GitHub API to fetch all releases
+        # Sending a GET request to GitHub API to fetch the latest release info
         response = requests.get(release_url)
-        
-        # Log the raw response to debug
-        print("GitHub API Response:", response.json())  # Log the entire response
         
         # Check if the request was successful
         response.raise_for_status()  # Will raise an exception for 4xx/5xx errors
         
         # Parse the JSON response to get the latest release data
-        releases = response.json()
-
-        if releases:
-            latest_release = releases[0]  # Get the latest release (including pre-releases)
-            latest_version = latest_release["tag_name"]
-            current_version = "v1.0.0"  # Replace with your current version
-
-            print(f"Latest Version: {latest_version}")  # Debug output
-
-            if latest_version != current_version:
-                # Show a prompt or message box to the user about the new update
-                messagebox.showinfo("Update Available", f"A new version ({latest_version}) is available!")
-            else:
-                print("You are using the latest version.")
+        latest_release = response.json()
+        
+        # Check if there are any assets available for the release
+        if not latest_release or 'assets' not in latest_release[0] or not latest_release[0]['assets']:
+            messagebox.showwarning("No Assets", "No downloadable assets found in the latest release.")
+            return
+        
+        # Extract the latest release version and its associated assets (e.g., .exe file)
+        latest_version = latest_release[0]['tag_name']
+        download_url = latest_release[0]['assets'][0]['browser_download_url']  # Assuming the .exe is the first asset
+        
+        print(f"Latest version: {latest_version}")
+        print(f"Download URL: {download_url}")
+        
+        # Here you can compare versions and prompt the user to download the update
+        current_version = "v1.1.2"  # Replace with the current version of your app
+        
+        if latest_version != current_version:
+            # Show a prompt or message box to the user about the new update
+            messagebox.showinfo("Update Available", f"A new version ({latest_version}) is available!")
+            # Here you could also provide a button or option to download the update automatically
         else:
-            messagebox.showwarning("No Releases", "No releases found in the repository.")
+            print("You are using the latest version.")
         
     except requests.exceptions.RequestException as e:
         print(f"Error checking for updates: {e}")
