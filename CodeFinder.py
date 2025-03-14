@@ -83,7 +83,7 @@ def save_filtered_list():
         center_window(error_window, 400, 150)
         tk.Label(error_window, text="You currently have this file open. Please close it and retry.").pack(pady=20)
         tk.Button(error_window, text="I have closed it, Retry.", command=lambda: save_filtered_list_retry(save_path, error_window)).pack(side="left", padx=20)
-        tk.Button(error_window, text="Ok", command=error_window.destroy).pack(side="right", padx=20)
+        tk.Button(error_window, text="Close", command=error_window.destroy).pack(side="right", padx=20)
         error_window.transient(tk_root)
         error_window.grab_set()
 
