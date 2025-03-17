@@ -163,7 +163,7 @@ check_for_update()
 # GUI setup
 tk_root = tk.Tk()
 tk_root.title("Code Filter from CSV")
-center_window(tk_root, 550, 550)
+center_window(tk_root, 550, 450)
 
 exact_match_var = tk.BooleanVar()
 partial_match_var = tk.BooleanVar()
